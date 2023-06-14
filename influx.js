@@ -18,7 +18,7 @@ const fetchData=async ()=>{
 }
 
 //function to insert data to temperature measurement
-const insertData=async (tag,value)=>{
+const insertSingleData=async (tag,value)=>{
     try{
         await client.writePoints([
             {
@@ -27,10 +27,16 @@ const insertData=async (tag,value)=>{
               fields: { value },
             },
           ]);
-        console.log("inserted data");
     }catch(err){
         console.log(err);
     }
+}
+
+const insertData=async (data)=>{
+    for (let i = 0; i < data.length; i++) {
+        const { tag, value } = data[i];
+        insertSingleData(tag, value);
+      }
 }
 
 module.exports= insertData;

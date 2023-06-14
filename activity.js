@@ -1,7 +1,6 @@
 const mqtt = require('mqtt');
-const { getLastDataPacketTime,setLastDataPacketTime,setConnectionTimeout} =require('./redis');
+const { getLastDataPacketTime,setLastDataPacketTime,getConnectionTimeout} =require('./redis');
 
-const timeOut=5;
 
 const client = mqtt.connect('mqtt://localhost:1883', {
   clientId: 'device_activity',
@@ -15,37 +14,41 @@ client.on('connect', () => {
       return;
     }
 
+//updating LastDataPacketTime when ever receving message
 client.on('message', (topic, payload) => {
         const payloadObj = JSON.parse(payload);
-        setLastDataPacketTime(payloadObj.time)
+        setLastDataPacketTime(payloadObj.time);
     });
   });
 });
 
 checkTimeout= async () => {
     try {
-      const lastDataPacketTime = await getLastDataPacketTime();
-      const timeDiff=(Date.now()-lastDataPacketTime)/1000;
+      const lastDataPacketTime = await getLastDataPacketTime(); //get lastdatapacket time
+      const timeDiff=(Date.now()-lastDataPacketTime)/1000; //taking the time difference between the last data packet send and now
+      const timeOut = await getConnectionTimeout(); 
 
       if(timeDiff>timeOut){
-        setConnectionTimeout(Date.now());
+        console.log("timeout occurred")
         const payloadObj={
             device:"INEM_DEMO",
             time:Date.now(),
-            data:{
+            data:[{
               tag:'RSSI',
               value:-1
             }
+            ]
         }
         const payload=JSON.stringify(payloadObj);
         client.publish('temp', payload);
+        clearInterval(intervalId);
       }
     } catch (error) {
       console.error('Error:', error);
     }
   }
 
-setInterval(checkTimeout, 10 * 1000);
+const intervalId=setInterval(checkTimeout, 8 * 1000);
 
 client.on('error', (err) => {
   console.log(err);

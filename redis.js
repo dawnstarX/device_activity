@@ -11,8 +11,9 @@ const setLastDataPacketTime = async (time) =>{
     await redis.set('LastDataPacketTime',time);
 }
 
-const setConnectionTimeout = async (time) =>{
-    await redis.hset('connection_timeout','INEM_DEMO',time);
+const getConnectionTimeout = async (time) =>{
+    const timeout=await redis.hget('connection_timeout','INEM_DEMO');
+    return timeout;
 }
 
 
@@ -20,5 +21,5 @@ const setConnectionTimeout = async (time) =>{
 module.exports={
     getLastDataPacketTime,
     setLastDataPacketTime,
-    setConnectionTimeout
+    getConnectionTimeout
 }

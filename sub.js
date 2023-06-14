@@ -13,11 +13,11 @@ client.on('connect', () => {
       return;
     }
 
-    client.on('message', (topic, payload) => {
-        console.log(`Received message on topic ${topic}: ${payload}`);
+    client.on('message', async(topic, payload) => {
+        console.log(`Received message`);
         const payloadObj = JSON.parse(payload);
-        console.log(payloadObj.time)
-        insertData(payloadObj.data.tag,payloadObj.data.value);
+        await insertData(payloadObj.data);
+        console.log("inserted into influxDB")
     });
   });
 });
